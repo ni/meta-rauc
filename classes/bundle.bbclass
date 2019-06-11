@@ -93,6 +93,7 @@ python __anonymous() {
 S = "${WORKDIR}/bundle"
 B = "${WORKDIR}/build"
 
+RAUC_SIGN_BUNDLE ??= "1"
 RAUC_KEY_FILE ??= ""
 RAUC_CERT_FILE ??= ""
 
@@ -205,12 +206,18 @@ BUNDLE_NAME[vardepsexclude] = "DATETIME"
 BUNDLE_LINK_NAME ??= "${BUNDLE_BASENAME}-${MACHINE}"
 
 do_bundle() {
-	if [ -z "${RAUC_KEY_FILE}" ]; then
-		bbfatal "'RAUC_KEY_FILE' not set. Please set to a valid key file location."
-	fi
+	sign_options="--no-signatures"
 
-	if [ -z "${RAUC_CERT_FILE}" ]; then
-		bbfatal "'RAUC_CERT_FILE' not set. Please set to a valid certificate file location."
+	if [ "${RAUC_SIGN_BUNDLE}" == "1" ]; then
+		if [ -z "${RAUC_KEY_FILE}" ]; then
+			bbfatal "'RAUC_KEY_FILE' not set. Please set to a valid key file location."
+		fi
+
+		if [ -z "${RAUC_CERT_FILE}" ]; then
+			bbfatal "'RAUC_CERT_FILE' not set. Please set to a valid certificate file location."
+		fi
+
+		sign_options="--cert=${RAUC_CERT_FILE} --key=${RAUC_KEY_FILE}"
 	fi
 
 	if [ -e ${B}/bundle.raucb ]; then
@@ -218,8 +225,7 @@ do_bundle() {
 	fi
 	${STAGING_DIR_NATIVE}${bindir}/rauc bundle \
 		--debug \
-		--cert=${RAUC_CERT_FILE} \
-		--key=${RAUC_KEY_FILE} \
+		$sign_options \
 		${S} \
 		${B}/bundle.raucb
 }
