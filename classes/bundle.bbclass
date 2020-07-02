@@ -303,9 +303,6 @@ do_bundle() {
 		sign_options="--cert=${RAUC_CERT_FILE} --key=${RAUC_KEY_FILE}"
 	fi
 
-	if [ -e ${B}/bundle.raucb ]; then
-		rm ${B}/bundle.raucb
-	fi
 	${STAGING_DIR_NATIVE}${bindir}/rauc bundle \
 		--debug \
 		${sign_options} \
@@ -314,6 +311,7 @@ do_bundle() {
 		${B}/bundle.raucb
 }
 do_bundle[dirs] = "${B}"
+do_bundle[cleandirs] = "${B}"
 
 addtask bundle after do_configure before do_build
 
